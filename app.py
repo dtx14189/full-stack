@@ -19,6 +19,10 @@ def create_account():
     bank.add_account(account_type)
     return jsonify({"message": f"{account_type} account created"}), 201
 
+@app.route("/accounts", methods=["GET"])
+def describe_accounts():
+    accounts = bank.describe()
+    return jsonify({"message": accounts}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)

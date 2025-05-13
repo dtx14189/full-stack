@@ -6,7 +6,7 @@ class CheckingAccount(Account):
     interest rate, and can incur a $5.75 fee if balance is less than $100."""
 
     def __init__(self, acct_id):
-        super().__init__(acct_id, Decimal('0.0008'))
+        super().__init__("Checking", acct_id, Decimal('0.0008'))
     
     def _apply_fees(self):
         """If balance is less than $100, apply a fee of $5.75. Create a transaction

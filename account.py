@@ -10,7 +10,8 @@ class Account:
     """Represent an account in the bank. An account has an id, a balance, 
     and a list of transactions."""
 
-    def __init__(self, acct_id, interest_rate):
+    def __init__(self, type: str, acct_id, interest_rate):
+        self._type = type
         self._id = acct_id
         self._interest_rate = interest_rate
         self._bal = Decimal('0')
@@ -86,6 +87,15 @@ class Account:
     
     def _set_bal(self, new_bal):
         self._bal = new_bal
+
+    def describe(self):
+        """Describe a single account with its type, id, and balance."""
+        rounded_bal = self._bal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return {
+            "type": self._type,
+            "id": self._id,
+            "balance": str(rounded_bal)
+        }
 
     def __str__(self):
         rounded_bal = self._bal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)

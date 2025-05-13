@@ -12,7 +12,7 @@ class SavingsAccount(Account):
     bypasses this limit."""
 
     def __init__(self, acct_id):
-        super().__init__(acct_id, Decimal("0.0033"))
+        super().__init__("Savings", acct_id, Decimal("0.0033"))
 
     def deposit_withdraw(self, amount, date):
         """Check if an additional transaction on given date exceeds transaction limits. If not,
