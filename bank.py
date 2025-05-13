@@ -32,6 +32,6 @@ class Bank:
                 return account
         return None
 
-    def describe(self) -> list[dict]:
+    def describe_accounts(self) -> list[dict]:
         """Describe all accounts with type, id, and balance"""
         return [account.describe() for account in self._accounts]

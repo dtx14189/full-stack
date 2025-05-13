@@ -62,6 +62,10 @@ class Account:
         for transaction in self._transactions:
             print(transaction)
 
+    def describe_transactions(self):
+        """Describe all transactions with date and amount."""
+        return [transaction.describe() for transaction in self._transactions]
+
     def id_matches(self, id):
         """Determine if this account has the given id"""
         return self._id == int(id)

@@ -1,5 +1,8 @@
 from flask import Flask, request, jsonify
 from bank import Bank  
+from datetime import datetime
+from decimal import Decimal, InvalidOperation
+import exceptions
 
 app = Flask(__name__)
 
@@ -21,8 +24,57 @@ def create_account():
 
 @app.route("/accounts", methods=["GET"])
 def describe_accounts():
-    accounts = bank.describe()
+    accounts = bank.describe_accounts()
     return jsonify({"message": accounts}), 200
+
+@app.route("/accounts/<account_id>", methods=["GET"])
+def get_account(account_id):
+    account = bank.find_account(account_id)
+    if account is None:
+        return jsonify({"error": "Account not found"}), 404
+    return jsonify(account.describe())
+
+@app.route("/accounts/<account_id>/transactions", methods=["POST"])
+def add_transaction(account_id):
+    data = request.get_json()
+    amount = data.get("amount")
+    date_str = data.get("date")
+
+    if amount is None or date_str is None:
+        return jsonify({"error": "Missing amount or date"}), 400
+    
+    try:
+        amount = Decimal(str(amount))
+    except InvalidOperation:
+        return jsonify({"error": "Invalid dollar amount"}), 400
+    try:
+        date = datetime.strptime(date_str, "%Y-%m-%d").date() 
+    except ValueError:
+        return jsonify({"error": "Invalid date. Please try again with a valid date in the format YYYY-MM-DD."}), 400
+    
+    account = bank.find_account(account_id)
+    if not account:
+        return jsonify({"error": "Account not found"}), 404
+    
+    try:
+        account.deposit_withdraw(amount, date)
+        return jsonify({"message": f"Transaction added to {account_id}"})
+    except exceptions.OverdrawError:
+        return jsonify({"error": "Insufficient balance"})
+    except exceptions.TransactionLimitError as e:
+        msg = "Daily limit reached" if e.hit_daily_limit else "Monthly limit reached"
+        return jsonify({"error": msg}), 400
+    except exceptions.TransactionSequenceError as e:
+        return jsonify({"error": f"Date must be on or after {e.latest_date}"}), 400
+
+@app.route("/accounts/<account_id>/transactions", methods=["GET"])
+def describe_transactions(account_id):
+    account = bank.find_account(account_id)
+    if account is None:
+        return jsonify({"error": "Account not found"}), 404
+    
+    transactions = account.describe_transactions()
+    return jsonify({"message": transactions})
 
 if __name__ == "__main__":
     app.run(debug=True)

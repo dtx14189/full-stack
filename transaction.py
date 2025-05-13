@@ -22,6 +22,14 @@ class Transaction:
         This transaction must also not be an interest or fee."""
         return (self._date.month == other_date.month) and (self._date.year == other_date.year)
     
+    def describe(self):
+        """Describe a single transaction with its date and amount."""
+        rounded_amt = self._amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return {
+            "amount": str(rounded_amt),
+            "date": str(self._date)
+        }
+
     def __lt__(self, other):
         return self._date < other._date
 
