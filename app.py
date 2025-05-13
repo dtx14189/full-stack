@@ -28,11 +28,11 @@ def describe_accounts():
     return jsonify({"message": accounts}), 200
 
 @app.route("/accounts/<account_id>", methods=["GET"])
-def get_account(account_id):
+def describe_account(account_id):
     account = bank.find_account(account_id)
     if account is None:
         return jsonify({"error": "Account not found"}), 404
-    return jsonify(account.describe())
+    return jsonify({"message": account.describe()}), 200
 
 @app.route("/accounts/<account_id>/transactions", methods=["POST"])
 def add_transaction(account_id):
@@ -58,7 +58,8 @@ def add_transaction(account_id):
     
     try:
         account.deposit_withdraw(amount, date)
-        return jsonify({"message": f"Transaction added to {account_id}"})
+        return jsonify({"message": f"Transaction added to account {account_id}",
+                        "balance": str(account.get_bal())}), 201
     except exceptions.OverdrawError:
         return jsonify({"error": "Insufficient balance"})
     except exceptions.TransactionLimitError as e:
@@ -74,7 +75,20 @@ def describe_transactions(account_id):
         return jsonify({"error": "Account not found"}), 404
     
     transactions = account.describe_transactions()
-    return jsonify({"message": transactions})
+    return jsonify({"message": transactions}), 200
+
+@app.route("/accounts/<account_id>/apply-interest-fees", methods=["POST"])
+def apply_interest_fees(account_id):
+    account = bank.find_account(account_id)
+    if account is None:
+        return jsonify({"error": "Account not found"}), 404
+
+    try:
+        account.apply_interest_fees()
+        return jsonify({"message": f"Interest and fees applieid to account {account_id}",
+                        "balance": str(account.get_bal())}), 200
+    except exceptions.TransactionSequenceError as e:
+        return jsonify({"error": f"Interest and fees already applied for {e.latest_date.strftime('%B')}."}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)

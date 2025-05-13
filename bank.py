@@ -1,6 +1,7 @@
 import logging
 from checking_account import CheckingAccount
 from savings_account import SavingsAccount
+from account import Account
 
 class Bank:
     """Represent a collection of accounts."""
@@ -24,7 +25,7 @@ class Bank:
         for account in self._accounts:
             print(account)
     
-    def find_account(self, account_id):
+    def find_account(self, account_id) -> Account:
         """Locate the account with the given id.
         Returns None if no matching account is found."""
         for account in self._accounts:

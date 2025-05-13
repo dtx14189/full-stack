@@ -91,7 +91,10 @@ class Account:
     
     def _set_bal(self, new_bal):
         self._bal = new_bal
-
+    
+    def get_bal(self):
+        return self._bal
+    
     def describe(self):
         """Describe a single account with its type, id, and balance."""
         rounded_bal = self._bal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
