@@ -12,7 +12,7 @@ class CheckingAccount(Account):
         """If balance is less than $100, apply a fee of $5.75. Create a transaction
         with fee amount, and add it to list of transactions. The date for this transaction
         is the last day of the month that had the latest user-created transaction."""
-        if(self._bal < Decimal('100')):
+        if(self.bal < Decimal('100')):
             self._add_transaction_end_of_month(Decimal('-5.75'))
     
     def __str__(self):

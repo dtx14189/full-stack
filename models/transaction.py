@@ -7,43 +7,47 @@ class Transaction(db.Model):
 
     __tablename__ = "transactions"
 
-    _id = db.Column(db.Integer, primary_key=True)
-    _account_id = db.Column(db.Integer, db.ForeignKey('accounts._id'))
-    _amount = db.Column(db.Numeric(10, 2), nullable=False)
-    _date = db.Column(db.Date, nullable=False)
-    _is_interest_fee = db.Column(db.Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    account_id = db.Column(db.Integer, db.ForeignKey('accounts._id'))
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    is_interest_fee = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, amount, date, is_interest_fee):
-        self._amount = amount
-        self._date = date
-        self._is_interest_fee = is_interest_fee
+    def __init__(self, amount, date, is_interest_fee, account):
+        self.amount = amount
+        self.date = date
+        self.is_interest_fee = is_interest_fee
+        self.account = account
     
     def is_exempt(self):
         """Check if the transaction is exempt from account limits"""
-        return self._is_interest_fee
+        return self.is_interest_fee
     
     def date_matches(self, other_date):
         """Determine if this transaction has the same date as another date. 
         This transaction must also not be an interest or fee."""
-        return (self._date == other_date)
+        return (self.date == other_date)
     
     def month_matches(self, other_date):
         """Determine if this transaction has the same month as another date. 
         This transaction must also not be an interest or fee."""
-        return (self._date.month == other_date.month) and (self._date.year == other_date.year)
+        return (self.date.month == other_date.month) and (self.date.year == other_date.year)
     
     def describe(self):
         """Describe a single transaction with its date and amount."""
-        rounded_amt = self._amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        rounded_amt = self.amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         return {
             "amount": str(rounded_amt),
-            "date": str(self._date)
+            "date": str(self.date)
         }
-
+    
+    def get_date(self):
+        return self.date
+    
     def __lt__(self, other):
-        return self._date < other._date
+        return self.date < other._date
 
     def __str__(self):
-        rounded_amt = self._amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-        return f"{self._date}, ${rounded_amt:,.2f}"
+        rounded_amt = self.amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return f"{self.date}, ${rounded_amt:,.2f}"
     

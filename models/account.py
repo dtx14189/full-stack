@@ -5,6 +5,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime
 from .transaction import Transaction
 from . import db
+from sqlalchemy.orm import relationship
 
 class Account(db.Model):
     """Represent an account in the bank. An account has an id, a balance, 
@@ -12,20 +13,24 @@ class Account(db.Model):
 
     __tablename__ = "accounts"
     
-    _id = db.Column(db.Integer, primary_key=True)
-    _type = db.Column(db.String, nullable=False)
-    _interest_rate = db.Column(db.Numeric(5, 4), nullable=False)
-    _bal = db.Column(db.Numeric(10, 2), nullable=False)
-    _latest_date = db.Column(db.Date, nullable=True)
-    _transactions = db.relationship("Transaction", backref="account", lazy=True, cascade="all, delete-orphan")
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String, nullable=False)
+    interest_rate = db.Column(db.Numeric(5, 4), nullable=False)
+    bal = db.Column(db.Numeric(10, 2), nullable=False)
+    transactions = relationship(
+        "Transaction", 
+        backref="account", 
+        lazy=True, 
+        cascade="all, delete-orphan",
+        order_by=Transaction.date.desc()
+    )
 
     def __init__(self, type: str, acct_id, interest_rate):
-        self._id = acct_id
-        self._type = type
-        self._interest_rate = interest_rate
-        self._bal = Decimal('0')
-        self._latest_date = None
-        self._transactions = []
+        self.id = acct_id
+        self.type = type
+        self.interest_rate = interest_rate
+        self.bal = Decimal('0')
+        # self._transactions = []
     
     def deposit_withdraw(self, amount, date):
         """Deposit/Withdraw from this account. A positive amount is a deposit, 
@@ -33,12 +38,13 @@ class Account(db.Model):
         and date, and add it to list of transactions.
         
         Only performs withdrawal if resulting balance is non-negative."""
-        if(self._bal + amount < Decimal('0')):
+        if(self.bal + amount < Decimal('0')):
             raise exceptions.OverdrawError()
         else:
-            if self._transactions:
-                if date < self._latest_date:
-                    raise exceptions.TransactionSequenceError(self._latest_date)    
+            if self.transactions:
+                latest_date = self._get_latest_date()
+                if latest_date is not None and date < self._get_latest_date():
+                    raise exceptions.TransactionSequenceError(self._get_latest_date())    
             self._add_transaction(amount, date, False)
         
     def apply_interest_fees(self):
@@ -49,8 +55,11 @@ class Account(db.Model):
         (2) If applicable, apply fees to balance. If fees are applied, create a transaction
         with fee amount, and add it to list of transactions. The date for this transaction
         is the last day of the month that had the latest user-created transaction."""
+        if not self.transactions:
+            return 
+        
         last_day_of_latest_month = self._find_last_day_of_month()
-        for transaction in self._transactions:
+        for transaction in self.transactions:
             if transaction.date_matches(last_day_of_latest_month) and transaction.is_exempt():
                 raise exceptions.TransactionSequenceError(last_day_of_latest_month)
 
@@ -59,8 +68,7 @@ class Account(db.Model):
         logging.debug("Triggered interest and fees")
 
     def _apply_interest(self):
-        
-        interest = self._bal * self._interest_rate
+        interest = self.bal * self.interest_rate
         self._add_transaction_end_of_month(interest)
         
     def _apply_fees(self):
@@ -68,51 +76,49 @@ class Account(db.Model):
 
     def list_transactions(self):
         """Print all transactions (date and amount) in this account."""
-        for transaction in self._transactions:
+        for transaction in self.transactions:
             print(transaction)
 
     def describe_transactions(self):
         """Describe all transactions with date and amount."""
-        return [transaction.describe() for transaction in self._transactions]
+        return [transaction.describe() for transaction in self.transactions]
 
     def id_matches(self, id):
         """Determine if this account has the given id"""
-        return self._id == int(id)
+        return self.id == int(id)
     
     def _add_transaction(self, amount, date, is_interest_fee):
-        transaction = Transaction(amount, date, is_interest_fee)
-        self._transactions.append(transaction)
-        self._transactions.sort()
-        if self._latest_date is None:
-            self._latest_date = date
-        elif date > self._latest_date:
-            self._latest_date = date
-        self._set_bal(self._bal + amount)
-        logging.debug(f"Created transaction: {self._id}, {amount}")
+        transaction = Transaction(amount, date, is_interest_fee, account=self)
+        self.bal += amount
+        db.session.add(self)
+        db.session.add(transaction)
+        db.session.commit()
+        logging.debug(f"Created transaction: {self.id}, {amount}")
 
     def _add_transaction_end_of_month(self, amount):
         last_day_of_latest_month = self._find_last_day_of_month()
         self._add_transaction(amount, last_day_of_latest_month, True)
     
     def _find_last_day_of_month(self):
-        days_in_latest_month = calendar.monthrange(self._latest_date.year, self._latest_date.month)[1] 
-        return datetime(self._latest_date.year, self._latest_date.month, days_in_latest_month).date()
+        latest_date = self._get_latest_date()
+        days_in_latest_month = calendar.monthrange(latest_date.year, latest_date.month)[1] 
+        return datetime(latest_date.year, latest_date.month, days_in_latest_month).date()
     
-    def _set_bal(self, new_bal):
-        self._bal = new_bal
+    def _get_latest_date(self):
+        return self.transactions[0].get_date() if self.transactions else None
     
     def get_bal(self):
-        return self._bal
+        return self.bal
     
     def describe(self):
         """Describe a single account with its type, id, and balance."""
-        rounded_bal = self._bal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        rounded_bal = self.bal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         return {
-            "type": self._type,
-            "id": self._id,
+            "type": self.type,
+            "id": self.id,
             "balance": str(rounded_bal)
         }
 
     def __str__(self):
-        rounded_bal = self._bal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-        return f"#{self._id:09d},\tbalance: ${rounded_bal:,.2f}"
+        rounded_bal = self.bal.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return f"#{self.id:09d},\tbalance: ${rounded_bal:,.2f}"

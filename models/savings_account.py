@@ -28,7 +28,7 @@ class SavingsAccount(Account):
         same_date = 2 # limit on # of transactions with same date
         same_month = 5 # limit on # of transactions with same month
 
-        for transaction in self._transactions:
+        for transaction in self.transactions:
             if transaction.date_matches(date_to_add) and (not transaction.is_exempt()): # same date
                 same_date -= 1
             if transaction.month_matches(date_to_add) and (not transaction.is_exempt()): # same month

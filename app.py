@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
-from models import db, Bank
+from models import db
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
+from bank import Bank
 import exceptions
 
 app = Flask(__name__)
@@ -9,9 +10,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:postgres@localhos
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
-
-with app.app_context():
-    db.create_all()
 
 bank = Bank()
 
@@ -98,4 +96,6 @@ def apply_interest_fees(account_id):
         return jsonify({"error": f"Interest and fees already applied for {e.latest_date.strftime('%B')}."}), 400
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
