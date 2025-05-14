@@ -1,27 +1,21 @@
 import logging
-from uuid import uuid4
-
 from models import db, Account, CheckingAccount, SavingsAccount
 
 class Bank:
     """Interface to interact with a persistent collection of accounts."""
 
-    def __init__(self):
-        self._accounts = []
-    
     def add_account(self, type: str) -> Account:
         """Create a new account (checking or savings) and save it to the database"""
 
-        account_id = str(uuid4())
         if type == "checking":
-            new_account = CheckingAccount(account_id)
+            new_account = CheckingAccount()
         elif type == "savings":
-            new_account = SavingsAccount(account_id)
+            new_account = SavingsAccount()
         
         db.session.add(new_account)
         db.session.commit()
 
-        logging.debug(f"Created account: {account_id}")
+        logging.debug(f"Created account with {new_account.get_id()}")
     
     def find_account(self, account_id) -> Account:
         """Locate the account with the given id.

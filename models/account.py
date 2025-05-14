@@ -14,7 +14,7 @@ class Account(db.Model):
     __tablename__ = "accounts"
     
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String, nullable=False)
+    type = db.Column(db.String(50))
     interest_rate = db.Column(db.Numeric(5, 4), nullable=False)
     bal = db.Column(db.Numeric(10, 2), nullable=False)
     transactions = relationship(
@@ -25,12 +25,14 @@ class Account(db.Model):
         order_by=Transaction.date.desc()
     )
 
-    def __init__(self, type: str, acct_id, interest_rate):
-        self.id = acct_id
-        self.type = type
+    __mapper_args__ = {
+        "polymorphic_on": "type",
+        "polymorphic_identity": "account",
+    }
+
+    def __init__(self, interest_rate):
         self.interest_rate = interest_rate
         self.bal = Decimal('0')
-        # self._transactions = []
     
     def deposit_withdraw(self, amount, date):
         """Deposit/Withdraw from this account. A positive amount is a deposit, 
@@ -86,6 +88,9 @@ class Account(db.Model):
     def id_matches(self, id):
         """Determine if this account has the given id"""
         return self.id == int(id)
+    
+    def get_id(self):
+        return self.id
     
     def _add_transaction(self, amount, date, is_interest_fee):
         transaction = Transaction(amount, date, is_interest_fee, account=self)

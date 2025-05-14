@@ -8,7 +8,7 @@ class Transaction(db.Model):
     __tablename__ = "transactions"
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer, db.ForeignKey('accounts._id'))
+    account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     date = db.Column(db.Date, nullable=False)
     is_interest_fee = db.Column(db.Integer, nullable=False)
@@ -45,7 +45,7 @@ class Transaction(db.Model):
         return self.date
     
     def __lt__(self, other):
-        return self.date < other._date
+        return self.date < other.date
 
     def __str__(self):
         rounded_amt = self.amount.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)

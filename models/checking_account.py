@@ -5,8 +5,12 @@ class CheckingAccount(Account):
     """Represents a checking account in the bank. Checking accounts have a 0.08%
     interest rate, and can incur a $5.75 fee if balance is less than $100."""
 
-    def __init__(self, acct_id):
-        super().__init__("Checking", acct_id, Decimal('0.0008'))
+    __mapper_args__ = {
+        "polymorphic_identity": "Checking",
+    }
+
+    def __init__(self):
+        super().__init__(Decimal('0.0008'))
     
     def _apply_fees(self):
         """If balance is less than $100, apply a fee of $5.75. Create a transaction
