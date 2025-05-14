@@ -11,7 +11,7 @@ class Transaction(db.Model):
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    is_interest_fee = db.Column(db.Integer, nullable=False)
+    is_interest_fee = db.Column(db.Boolean, nullable=False)
 
     def __init__(self, amount, date, is_interest_fee, account):
         self.amount = amount

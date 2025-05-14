@@ -26,7 +26,7 @@ class Account(db.Model):
     )
 
     __mapper_args__ = {
-        "polymorphic_on": "type",
+        "polymorphic_on": type,
         "polymorphic_identity": "account",
     }
 
