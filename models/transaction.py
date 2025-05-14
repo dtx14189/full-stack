@@ -1,8 +1,18 @@
 from decimal import Decimal, ROUND_HALF_UP
+from . import db
 
-class Transaction:
+class Transaction(db.Model):
     """Represent a transaction, which is either a deposit, withdrawal, interest, or a few.
     A transaction has an amount, a date, and boolean indicating whether it is an interest/fee."""
+
+    __tablename__ = "transactions"
+
+    _id = db.Column(db.Integer, primary_key=True)
+    _account_id = db.Column(db.Integer, db.ForeignKey('accounts._id'))
+    _amount = db.Column(db.Numeric(10, 2), nullable=False)
+    _date = db.Column(db.Date, nullable=False)
+    _is_interest_fee = db.Column(db.Integer, nullable=False)
+
     def __init__(self, amount, date, is_interest_fee):
         self._amount = amount
         self._date = date

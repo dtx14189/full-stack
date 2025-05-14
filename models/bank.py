@@ -1,7 +1,7 @@
 import logging
-from checking_account import CheckingAccount
-from savings_account import SavingsAccount
-from account import Account
+from .checking_account import CheckingAccount
+from .savings_account import SavingsAccount
+from .account import Account
 
 class Bank:
     """Represent a collection of accounts."""

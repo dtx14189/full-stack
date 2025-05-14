@@ -1,6 +1,6 @@
 import exceptions
 from decimal import Decimal
-from account import Account
+from .account import Account
 
 class SavingsAccount(Account):
     """Represent a savings account in the bank. Savings accounts have a 0.33%

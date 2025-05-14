@@ -1,5 +1,5 @@
 from decimal import Decimal
-from account import Account
+from .account import Account
 
 class CheckingAccount(Account):
     """Represents a checking account in the bank. Checking accounts have a 0.08%

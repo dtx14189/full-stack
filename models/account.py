@@ -2,21 +2,30 @@ import calendar
 import logging
 import exceptions
 from decimal import Decimal, ROUND_HALF_UP
-from transaction import Transaction
 from datetime import datetime
+from .transaction import Transaction
+from . import db
 
-    
-class Account:
+class Account(db.Model):
     """Represent an account in the bank. An account has an id, a balance, 
     and a list of transactions."""
 
+    __tablename__ = "accounts"
+    
+    _id = db.Column(db.Integer, primary_key=True)
+    _type = db.Column(db.String, nullable=False)
+    _interest_rate = db.Column(db.Numeric(5, 4), nullable=False)
+    _bal = db.Column(db.Numeric(10, 2), nullable=False)
+    _latest_date = db.Column(db.Date, nullable=True)
+    _transactions = db.relationship("Transaction", backref="account", lazy=True, cascade="all, delete-orphan")
+
     def __init__(self, type: str, acct_id, interest_rate):
-        self._type = type
         self._id = acct_id
+        self._type = type
         self._interest_rate = interest_rate
         self._bal = Decimal('0')
-        self._transactions = []
         self._latest_date = None
+        self._transactions = []
     
     def deposit_withdraw(self, amount, date):
         """Deposit/Withdraw from this account. A positive amount is a deposit, 

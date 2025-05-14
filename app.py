@@ -1,10 +1,17 @@
 from flask import Flask, request, jsonify
-from bank import Bank  
+from models import db, Bank
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 import exceptions
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:postgres@localhost:5432/bank_db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 bank = Bank()
 
@@ -25,14 +32,14 @@ def create_account():
 @app.route("/accounts", methods=["GET"])
 def describe_accounts():
     accounts = bank.describe_accounts()
-    return jsonify({"message": accounts}), 200
+    return jsonify({"accounts": accounts}), 200
 
 @app.route("/accounts/<account_id>", methods=["GET"])
 def describe_account(account_id):
     account = bank.find_account(account_id)
     if account is None:
         return jsonify({"error": "Account not found"}), 404
-    return jsonify({"message": account.describe()}), 200
+    return jsonify({"account": account.describe()}), 200
 
 @app.route("/accounts/<account_id>/transactions", methods=["POST"])
 def add_transaction(account_id):
@@ -61,7 +68,7 @@ def add_transaction(account_id):
         return jsonify({"message": f"Transaction added to account {account_id}",
                         "balance": str(account.get_bal())}), 201
     except exceptions.OverdrawError:
-        return jsonify({"error": "Insufficient balance"})
+        return jsonify({"error": "Insufficient balance"}), 400
     except exceptions.TransactionLimitError as e:
         msg = "Daily limit reached" if e.hit_daily_limit else "Monthly limit reached"
         return jsonify({"error": msg}), 400
@@ -75,7 +82,7 @@ def describe_transactions(account_id):
         return jsonify({"error": "Account not found"}), 404
     
     transactions = account.describe_transactions()
-    return jsonify({"message": transactions}), 200
+    return jsonify({"transactions": transactions}), 200
 
 @app.route("/accounts/<account_id>/apply-interest-fees", methods=["POST"])
 def apply_interest_fees(account_id):
@@ -85,7 +92,7 @@ def apply_interest_fees(account_id):
 
     try:
         account.apply_interest_fees()
-        return jsonify({"message": f"Interest and fees applieid to account {account_id}",
+        return jsonify({"message": f"Interest and fees applied to account {account_id}",
                         "balance": str(account.get_bal())}), 200
     except exceptions.TransactionSequenceError as e:
         return jsonify({"error": f"Interest and fees already applied for {e.latest_date.strftime('%B')}."}), 400
