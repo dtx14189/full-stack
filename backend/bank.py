@@ -24,7 +24,7 @@ class Bank:
 
     def describe_accounts(self) -> list[dict]:
         """Describe all accounts with type, id, and balance"""
-        accounts: list[Account] = Account.query.all()
+        accounts: list[Account] = Account.query.order_by(Account.id).all()
         return [account.describe() for account in accounts]
     
     def list_accounts(self):
