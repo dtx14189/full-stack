@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from models import db
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -6,6 +7,8 @@ from bank import Bank
 import exceptions
 
 app = Flask(__name__)
+CORS(app)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:postgres@localhost:5432/bank_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -20,6 +23,7 @@ def handle_unexpected_error(error):
 @app.route("/accounts", methods=["POST"])
 def create_account():
     data = request.get_json()
+    print(data)
     account_type = data.get("type")
     if account_type not in ("checking", "savings"):
         return jsonify({"error": "Invalid account type"}), 400
