@@ -19,7 +19,7 @@ function App() {
       const data = await response.json();
       setAccounts(data.accounts);
     } catch (err) {
-      setMessage("Failed to load accounts");
+      setMessage(`Error: Failed to load accounts`);
     }
   };
 
