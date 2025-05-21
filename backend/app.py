@@ -9,7 +9,7 @@ import exceptions
 app = Flask(__name__)
 CORS(app)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:postgres@localhost:5432/bank_db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:postgres@db:5432/bank_db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -102,4 +102,4 @@ def apply_interest_fees(account_id):
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
