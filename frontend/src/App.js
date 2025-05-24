@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+const API_BASE = "http://a4f658d4990b84a43a89fd556025536d-2106667863.us-west-1.elb.amazonaws.com:5000";
+
 function App() {
   const [type, setType] = useState("");
   const [accounts, setAccounts] = useState([]);
@@ -15,7 +17,7 @@ function App() {
 
   const fetchAccounts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/accounts");
+      const response = await fetch(`${API_BASE}/accounts`);
       const data = await response.json();
       setAccounts(data.accounts);
     } catch (err) {
@@ -26,7 +28,7 @@ function App() {
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:5000/accounts", {
+    const response = await fetch(`${API_BASE}/accounts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,7 +52,7 @@ function App() {
     // setMessage("");
 
     try {
-      const response = await fetch(`http://localhost:5000/accounts/${acct.id}/transactions`);
+      const response = await fetch(`${API_BASE}/accounts/${acct.id}/transactions`);
       const data = await response.json();
       setTransactions(data.transactions || data); // adjust depending on backend
     } catch (err) {
@@ -73,7 +75,7 @@ function App() {
     }
 
     const response = await fetch(
-      `http://localhost:5000/accounts/${selectedAccount.id}/transactions`,
+      `${API_BASE}/accounts/${selectedAccount.id}/transactions`,
       {
         method: "POST",
         headers: {
@@ -100,7 +102,7 @@ function App() {
   };
 
   const applyInterest = async (acctId) => {
-    const response = await fetch(`http://localhost:5000/accounts/${acctId}/apply-interest-fees`, {
+    const response = await fetch(`${API_BASE}/accounts/${acctId}/apply-interest-fees`, {
       method: "POST",
     });
 
