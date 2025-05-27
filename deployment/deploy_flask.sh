@@ -12,12 +12,6 @@ ECR_URI="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME"
 echo "Building All Docker image..."
 docker-compose build
 
-# Remove stopped containers
-docker container prune
-
-# Remove dangling images
-docker image prune
-
 # Wipe old images
 aws ecr list-images \
   --repository-name bank-backend \
@@ -42,9 +36,13 @@ docker push $ECR_URI:$IMAGE_TAG
 echo "Applying backend.yaml and postgres.yaml to cluster..."
 kubectl apply -f backend.yaml -f postgres.yaml
 
-echo "Restarting Kubernetes deployment..."
+# echo "Restarting Kubernetes deployment..."
 kubectl rollout restart deployment $DEPLOYMENT_NAME
+kubectl rollout restart deployment postgres
 
+# Cleanup
+docker container prune # Remove stopped containers
+docker image prune # Remove dangling images
 rm images-to-delete.json
 
 echo "Deployment complete. Use 'kubectl get pods' to check status."
