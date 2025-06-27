@@ -142,6 +142,9 @@ function App() {
       </form>
 
       <h2>Accounts</h2>
+      <p style={{ fontStyle: "italic", fontSize: "14px", marginTop: "-10px" }}>
+        Click on an account to add a transaction
+      </p>
       <ul>
         {accounts.map((acct) => (
           <li

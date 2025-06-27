@@ -13,6 +13,6 @@ This is a full-stack bank application built with:
 2. Run the following command to build and start all services:
 
    ```bash
-   docker compose up --build
+   docker compose up
 3. Once everything is running, open your browser and go to `http://localhost:3000
 
