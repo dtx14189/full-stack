@@ -4,7 +4,7 @@ from models import db, Account, CheckingAccount, SavingsAccount
 class Bank:
     """Interface to interact with a persistent collection of accounts."""
 
-    def add_account(self, type: str) -> Account:
+    def add_account(self, type: str):
         """Create a new account (checking or savings) and save it to the database"""
 
         if type == "checking":

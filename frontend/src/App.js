@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const API_BASE = "http://a4f658d4990b84a43a89fd556025536d-2106667863.us-west-1.elb.amazonaws.com:5000";
+const API_BASE = "http://localhost:5000";
 
 function App() {
   const [type, setType] = useState("");
