@@ -14,5 +14,5 @@ This is a full-stack bank application built with:
 
    ```bash
    docker compose up
-3. Once everything is running, open your browser and go to `http://localhost:3000
+3. Once everything is running, open your browser and go to http://localhost:3000
 
